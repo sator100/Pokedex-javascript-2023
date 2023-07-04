@@ -8,6 +8,18 @@ for(let i = 0; i<=251; i++){
         .then(data => mostrarPokemon(data))
 }
 
+async function obtenerPokemones() {
+    try {
+        for (let i = 1; i <= 251; i++) {
+        const response = await fetch(URL + i);
+        const data = await response.json();
+        mostrarPokemon(data);
+    }
+    } catch (error) {
+        console.error("Error al obtener los pokémon", error);
+    }
+}
+
 function mostrarPokemon(poke){
 
     let tipos = poke.types.map((type) => `<p class="${type.type.name} tipo">${type.type.name}</p>`)
@@ -45,25 +57,29 @@ function mostrarPokemon(poke){
     ListaPokemon.append(div);
 }
 
-botonesHeader.forEach(boton => boton.addEventListener("click", (event) => {
+obtenerPokemones();
+
+botonesHeader.forEach((boton) => boton.addEventListener("click", async (event) => {
     const BotonId = event.currentTarget.id;
 
-    ListaPokemon.innerHTML = '';
-    
-    for(let i = 0; i<=251; i++){
-        fetch(URL + i)
-            .then((response) => response.json())
-            .then(data => {
+    ListaPokemon.innerHTML = "";
 
-                if(BotonId === "ver-todos"){
+    try {
+        for (let i = 1; i <= 251; i++) {
+            const response = await fetch(URL + i);
+            const data = await response.json();
+
+            if (BotonId === "ver-todos") {
+                mostrarPokemon(data);
+            } else {
+                const tipos = data.types.map((type) => type.type.name);
+                if (tipos.some((tipo) => tipo.includes(BotonId))) {
                     mostrarPokemon(data);
-                }else{
-                    const tipos = data.types.map((type) => type.type.name);
-                    if(tipos.some(tipo => tipo.includes(BotonId))){
-                        mostrarPokemon(data);
-                    }
                 }
-            })
+            }
+        }
+    } catch (error) {
+        console.error("Error al filtrar los pokémon", error);
     }
 }
 ));
